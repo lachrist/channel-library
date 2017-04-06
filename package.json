@@ -1,0 +1,18 @@
+{ "name": "request-uniform"
+, "description": "Uniform interface to send HTTP requests"
+, "version": "0.0.0"
+, "author":
+    { "name": "Laurent Christophe"
+    , "email": "lachrist@vub.ac.be"
+    }
+, "repository": "lachrist/request-uniform"
+, "license": "MIT"
+, "dependencies":
+    { "readline-sync": "*"
+    }
+, "main": "node.js"
+, "keywords":
+    [ "Request"
+    , "HTTP"
+    ]
+}
