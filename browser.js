@@ -11,6 +11,8 @@ function parse (headers) {
 }
 
 module.exports = function (url) {
+  if (typeof url === "object")
+    url = url.protocol+"//"+url.hostname+":"+url.port+(url.prefix||"");
   return function (method, path, headers, body, callback) {
     var req = new XMLHttpRequest();
     req.open(method, url+path, Boolean(callback));

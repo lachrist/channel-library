@@ -4,19 +4,28 @@ var Url = require("url");
 var ChildProcess = require("child_process");
 var ParseResponse = require("./lib/parse-response.js");
 
-module.exports = function (url) {
-  var parts = Url.parse(url);
-  if (!parts.protocol)
-    var socket = url;
+// options: {
+//   protocol: "http[s]:",
+//   hostname: "localhost",
+//   port: 8080
+//   socket: "/path/to/socket",
+//   prefix: "/foo/bar"
+// }
+module.exports = function (options) {
+  if (typeof options === "string") {
+    options = Url.parse(options);
+    options.prefix = options.path;
+  }
+  options.prefix = options.prefix || "";
   return function (method, path, headers, body, callback) {
     if (callback) {
       Http.request({
-        protocol: socket ? "http:" : parts.protocol,
-        hostname: socket ? undefined : parts.hostname,
-        port: socket ? undefined : parts.port,
-        socketPath: socket,
+        protocol: options.protocol,
+        hostname: options.hostname,
+        port: options.port,
+        socketPath: options.socket,
         method: method,
-        path: (socket ? "" : parts.path) + path,
+        path: options.prefix + path,
         headers: headers
       }).on("response", function (res) {
         var buffers = [];
@@ -37,10 +46,10 @@ module.exports = function (url) {
         args.push("--header");
         args.puhs(JSON.stringify(h+": "+headers[h]));
       }
-      if (socket)
-        args.push("--unix-socket", socket, path);
+      if ("socket" in options)
+        args.push("--unix-socket", options.socket, options.protocol+"//localhost"+options.prefix+path);
       else
-        args.push(url+path);
+        args.push(options.protocol+"//"+options.hostname+":"+options.port+options.prefix+path);
       var result = ChildProcess.spawnSync("curl", args, {input:body, encoding:"utf8"});
       if (result.error)
         return [result.error];
