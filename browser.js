@@ -1,35 +1,30 @@
 
-function parse (headers) {
-  var object = {};
-  headers.split("\r\n").forEach(function (pair) {
-    var parts = /([^:]+): ([\s\S]+)/;
-    if (!parts)
-      throw new Error("Cannot parse: "+pair+ " from "+headers);
-    object[parts[1]] = parts[2];
-  });
-  return object;
-}
+var ParseHeaders = require("./parse-headers.js");
 
-module.exports = function (url) {
-  if (typeof url === "object")
-    url = url.protocol+"//"+url.hostname+":"+url.port+(url.prefix||"");
-  return function (method, path, headers, body, callback) {
-    var req = new XMLHttpRequest();
-    req.open(method, url+path, Boolean(callback));
-    for (var name in headers)
-      req.setRequestHeader(name, headers[name]);
-    if (!callback) {
-      try {    
-        req.send(body);
-        return [null, req.status, parse(req.getAllResponseHeaders()), req.responseText];
-      } catch (error) {
-        return [error];
-      }
-    }
-    req.send(body);
-    req.addEventListener("error", callback);
-    req.addEventListener("load", function () {
-      callback(null, req.status, parse(req.getAllResponseHeaders()), req.responseText);
+module.exports = function (method, url, headers, body, callback) {
+  method = method || "GET";
+  url = typeof url === "string" ? url : url.protocol+"//"+url.hostname+":"+url.port+url.path;
+  headers = headers || {};
+  var req = new XMLHttpRequest();
+  req.open(method, url, Boolean(callback));
+  for (var name in headers)
+    req.setRequestHeader(name, headers[name]);
+  req.send(body);
+  if (!callback) {
+    return {
+      status: req.status,
+      reason: req.statusText,
+      headers: ParseHeaders(req.getAllResponseHeaders().split("\r\n")),
+      body: req.responseText
+    };
+  }
+  req.addEventListener("error", callback);
+  req.addEventListener("load", function () {
+    callback(null, {
+      status: req.status,
+      reason: req.statusText,
+      headers: ParseHeaders(req.getAllResponseHeaders().split("\r\n")),
+      body: req.responseText
     });
-  };
+  });
 };
