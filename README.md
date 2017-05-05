@@ -4,17 +4,28 @@ A uniform API for http[s] request.
 ## Node
 
 ```js
-var RequestUniform = require("request-uniform/node");
-// A path to a unix socket can also be passed (faster)
-var request = RequestUniform("http://www.example.com/foo");
-var method = "GET";
-var path = "/bar";
-var headers = {};
-var body = "";
-// Asynchronous http request with require("http").request
-request(method, path, headers, body, function (error, status, headers, body) { ... });
-// Synchronous http request by spawing curl with require("child_process").spawnSync
-var [error, status, headers, body] = request(method, path, headers, body);
+// Choose either host or unix (faster)
+var options = {
+  secure: false,
+  host: "localhost:8080",
+  unix: "/absolute/path/to/unix/domain/socket", 
+  method: "GET",
+  path: "/path?query#hash"
+  headers: {}, 
+  body: null
+};
+// Asynchronous http(s) request
+Protocols.http(options, function (error, response) {
+  ...
+});
+// Asynchronous http(s) request without parsing the response
+Protocols.http(options, true);
+// Synchronous http(s) request
+try {
+  var response = Protocols.http(options);
+} catch (error) {
+  ...
+}
 ```
 
 Alternatively, the response can be manually entered by the user through a synchronous readline with `require("request-uniform/node-readline-sync")`.

@@ -2,12 +2,9 @@
 
 var ParseHeaders = require("./parse-headers.js");
 
-module.exports = function (method, url, headers, body, callback) {
-  method = method || "GET";
-  url = typeof url === "string" ? url : url.protocol+"//"+url.hostname+":"+url.port+url.path;
-  headers = headers || {};
+module.exports = function (method, host, path, headers, body, callback) {
   var req = new XMLHttpRequest();
-  req.open(method, url, Boolean(callback));
+  req.open(method, host+path, Boolean(callback));
   for (var name in headers)
     req.setRequestHeader(name, headers[name]);
   req.send(body);
@@ -45,8 +42,10 @@ module.exports = function (lines) {
 
 },{}],3:[function(require,module,exports){
 var Request = require("request-uniform/browser.js");
-Request("GET", "http://www.example.com/foo", {}, null, function (error, response) {
+Request("GET", "http://www.example.com", "/foo", {}, null, function (error, response) {
+  if (error)
+    throw error;
   console.log(response);
 });
-console.log(Request("GET", "http://www.example.com/foo", {}, null));
+console.log(Request("GET", "https://www.example.com", "/foo", {}, null));
 },{"request-uniform/browser.js":1}]},{},[3]);
