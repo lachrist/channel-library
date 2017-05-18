@@ -1,6 +1,6 @@
 # Channel Uniform
 
-API for performing http(s) request and creating websockets uniformely accross node.js and browsers.
+API for performing http(s) request and creating websockets uniformely accross [node.js](http://nodejs.org) and browsers.
 * Use `require("channel-uniform/node")` inside node applications.
 * Use `require("channel-uniform/browser")` inside modules to be [browserified](http://browserify.org). 
 
@@ -31,7 +31,6 @@ ws.onopen = function () {
 ```
 
 ```
-
 http-sync
  { status: 200,
   reason: 'OK',
@@ -72,12 +71,12 @@ ws
 Instantiate a new channel.
 
 * `host(string)`: defines the other end point of the channel, understand the formats detailed below.
-   Format       | Example                | Remark
-  --------------|------------------------|------------------------------------------------------------------------------------
-  host and port | `"www.example.org:80"` | 
-  host only     | `"www.example.org"`    | The default port is used: 80 for plain connections and 443 for encrypted connection
-  port only     | `"8080"`               | Equivalent to `"localhost:8080"`
-  path          | "/path/to/unix-socket" | Absolute path to a unix-domain-socket, faster but works only on node
+ Format       | Example                | Remark
+--------------|------------------------|------------------------------------------------------------------------------------
+host and port | `"www.example.org:80"` | 
+host only     | `"www.example.org"`    | The default port is used: 80 for plain connections and 443 for encrypted connection
+port only     | `"8080"`               | Equivalent to `"localhost:8080"`
+path          | "/path/to/unix-socket" | Absolute path to a unix-domain-socket, faster but works only on node
 * `secure(boolean)`: indicates whether the communication should be encrypted or not.
 * `channel(object)`: instance of this module.
 
