@@ -1,11 +1,11 @@
 # Channel Uniform
 
-API for performing http(s) request and creating websockets uniformely accross [node.js](http://nodejs.org) and browsers.
+API for performing http(s) request and opening websockets uniformly across [node.js](http://nodejs.org) and browsers.
 * Use `require("channel-uniform/node")` inside node applications.
 * Use `require("channel-uniform/browser")` inside modules to be [browserified](http://browserify.org). 
 
 ```js
-// Uncomment one of the two lines below
+// Uncomment one of the two lines below:
 // var Channel = require("channel-uniform/node");
 // var Channel = require("channel-uniform/browser");
 
@@ -108,9 +108,8 @@ Perform an asynchronous http(s) request.
   * Else if callback is a truthy value, the response will not be parsed (faster).
   * Else a synchronous request will actually be performed.
 
-**Attention**: On node, when the callback parameter is a function, the request will only be fired only after resuming to the event loop.
-It is the expected behavior of the [http.request](https://nodejs.org/api/http.html#http_http_request_options_callback).
-Every other communication in this module will be fired immediately.
+**Attention**: On node, when the callback parameter is a function, the request will only be fired only after resuming to the event loop which is the expected behavior of [http.request](https://nodejs.org/api/http.html#http_http_request_options_callback).
+Every other communication in this module are fired immediately.
 
 ## `websocket = channel.websocket(path)`
 

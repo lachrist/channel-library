@@ -1,4 +1,4 @@
-// Uncomment one of the two lines below
+// Uncomment one of the two lines below:
 // var Channel = require("channel-uniform/node");
 // var Channel = require("channel-uniform/browser");
 

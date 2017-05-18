@@ -1,5 +1,5 @@
 { "name": "channel-uniform"
-, "description": "Uniform API to perform http(s) requests and open websockets"
+, "description": "Uniform API for performing http(s) request and opening websockets"
 , "version": "0.0.0"
 , "author":
     { "name": "Laurent Christophe"
