@@ -1,13 +1,19 @@
 
 var Ws = require("ws");
-var HttpNode = require("./http-node.js");
+var Request = require("./request.js");
+var ParseHost = require("./parse-host.js");
 
 module.exports = function (host, secure) {
+  var host = ParseHost(host);
   secure = secure ? "s" : "";
+  if (host.unix)
+    var prefix = "ws"+secure+"+unix://"+host.unix+":";
+  else if (host.port)
+    var prefix = "ws"+secure+"://"+host.hostname+":"+host.port;
+  else
+    var prefix = "ws"+secure+"://"+host.hostname;
   return {
-    http: HttpNode(host, secure),
-    socket: (host.indexOf("/") === -1)
-      ? function (path) { return new Ws("ws"+secure+"://"+host+path) }
-      : function (path) { return new Ws("ws"+secure+"+unix://"+host+":"+path) }
+    websocket: function (path) { return new Ws(prefix+path) },
+    request: Request(host, secure)
   };
 };

@@ -1,7 +1,9 @@
-var Request = require("request-uniform/browser.js");
-Request("GET", "http://www.example.com", "/foo", {}, null, function (error, response) {
+var Client = require("client-uniform/browser.js");
+// Asynchronous HTTP request to www.example.com:80
+Client("www.example.com", false).http("GET", "/foo", {}, null, function (error, response) {
   if (error)
     throw error;
   console.log(response);
 });
-console.log(Request("GET", "https://www.example.com", "/foo", {}, null));
+// Synchronous HTTPS request to www.example.com:443
+console.log(Client("www.example.com", true).http("GET", "/foo", {}, null));

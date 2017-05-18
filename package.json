@@ -1,5 +1,5 @@
-{ "name": "request-uniform"
-, "description": "Uniform interface to send HTTP requests"
+{ "name": "client-uniform"
+, "description": "Uniform interface to perform http(s) requests and client side WebSocket communication"
 , "version": "0.0.0"
 , "author":
     { "name": "Laurent Christophe"
@@ -8,11 +8,12 @@
 , "repository": "lachrist/request-uniform"
 , "license": "MIT"
 , "dependencies":
-    { "readline-sync": "*"
+    { "ws": "*"
     }
 , "main": "node.js"
 , "keywords":
     [ "Request"
     , "HTTP"
+    , "WebSocket"
     ]
 }

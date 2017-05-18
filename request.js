@@ -7,29 +7,20 @@ var ChildProcess = require("child_process");
 var emit = ChildProcess.fork(__dirname+"/emit.js", {stdio: ["ignore", "inherit", "inherit", "ipc"]});
 
 module.exports = function (host, secure) {
-  if (host.indexOf("/")) {
-    var unix = host;
-    var host = "localhost";
-  } else if (host.indexOf(":") !== -1) {
-    var hostname = host.split(":")[0];
-    var port = Number(host.split(":")[1]);
-  } else {
-    var hostname = host;
-  }
-  var protocol = secure ? Https : Http;
   return function (method, path, headers, body, callback) {
-    if (!callback)
+    if (!callback) {
       var args = ["--request", method, "--include", "--silent"];
       if (body)
         args.push("--data-binary", "@-");
-      for (var h in headers) {
-        args.push("--header");
-        args.push(JSON.stringify(h+": "+headers[h]));
-      }
-      if (unix)
-        args.push("--unix-socket", unix);
-      args.push("http"+secure+"://"+host+path);
-      var result = ChildProcess.spawnSync("curl", args, {input:body, encoding:"utf8"});
+      for (var h in headers)
+        args.push("--header", h+": "+headers[h]);
+      if (host.unix)
+        args.push("--unix-socket", host.unix, "http"+secure+"://localhost"+path);
+      else if (host.port)
+        args.push("http"+secure+"://"+host.hostname+":"+host.port+path);
+      else
+        args.push("http"+secure+"://"+host.hostname+path);
+      var result = ChildProcess.spawnSync("curl", args, {input:body||"", encoding:"utf8"});
       if (result.error)
         throw result.error;
       if (result.status !== 0)
@@ -39,16 +30,16 @@ module.exports = function (host, secure) {
     var options = {
       secure: secure,
       method: method,
-      hostname: hostname,
-      port: port,
-      socketPath: unix,
+      hostname: host.hostname,
+      port: host.port,
+      socketPath: host.unix,
       headers: headers,
       path: path,
       body: body
     };
     if (typeof callback !== "function") 
       return emit.send(options);
-    protocol.request(options, function (res) {
+    var req = (secure?Https:Http).request(options, function (res) {
       var buffers = [];
       res.on("error", callback);
       res.on("data", function (buffer) { buffers.push(buffer) });
@@ -60,5 +51,12 @@ module.exports = function (host, secure) {
           body: Buffer.concat(buffers).toString("utf8")
         });
       });
-    }).on("error", callback).end(body, "utf8");
+    });
+    req.on("error", callback);
+    req.end(body, "utf8");
+    // if (body)
+    //   req.end(body, "utf8");
+    // else
+    //   req.end();
   };
+};

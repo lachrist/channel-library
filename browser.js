@@ -13,13 +13,13 @@ var ParseHeaders = require("./parse-headers.js");
 // and request body is set to null.
 
 // This seems to indicate that the request will be send
-// even if the process is looping afterward.
+// even if we do not resume to the event loop afterward.
 
 module.exports = function (host, secure) {
   secure = secure ? "s" : "";
   return {
-    ws: function (path) { return new WebSocket("ws"+secure+"://"+host+path) },
-    http: function (method, path, header, body, callback) {
+    websocket: function (path) { return new WebSocket("ws"+secure+"://"+host+path) },
+    request: function (method, path, headers, body, callback) {
       var req = new XMLHttpRequest();
       req.open(method, "http"+secure+"://"+host+path, Boolean(callback));
       for (var name in headers)
