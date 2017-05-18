@@ -108,8 +108,9 @@ Perform an asynchronous http(s) request.
   * Else if callback is a truthy value, the response will not be parsed (faster).
   * Else a synchronous request will actually be performed.
 
-**Attention**: on node, when the callback parameter is a function, the request will only be fired after resuming to the event loop.
-Every other communication in this module will be fired immediately regardeless resumption to the event looop.
+**Attention**: On node, when the callback parameter is a function, the request will only be fired only after resuming to the event loop.
+It is the expected behavior of the [http.request](https://nodejs.org/api/http.html#http_http_request_options_callback).
+Every other communication in this module will be fired immediately.
 
 ## `websocket = channel.websocket(path)`
 
