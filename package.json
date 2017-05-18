@@ -1,5 +1,5 @@
-{ "name": "client-uniform"
-, "description": "Uniform interface to perform http(s) requests and client side WebSocket communication"
+{ "name": "channel-uniform"
+, "description": "Uniform API to perform http(s) requests and open websockets"
 , "version": "0.0.0"
 , "author":
     { "name": "Laurent Christophe"

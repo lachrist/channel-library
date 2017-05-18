@@ -14,13 +14,13 @@ var ParseHeaders = require("./parse-headers.js");
 // and request body is set to null.
 
 // This seems to indicate that the request will be send
-// even if the process is looping afterward.
+// even if we do not resume to the event loop afterward.
 
 module.exports = function (host, secure) {
   secure = secure ? "s" : "";
   return {
-    ws: function (path) { return new WebSocket("ws"+secure+"://"+host+path) },
-    http: function (method, path, headers, body, callback) {
+    websocket: function (path) { return new WebSocket("ws"+secure+"://"+host+path) },
+    request: function (method, path, headers, body, callback) {
       var req = new XMLHttpRequest();
       req.open(method, "http"+secure+"://"+host+path, Boolean(callback));
       for (var name in headers)
@@ -63,13 +63,28 @@ module.exports = function (lines) {
 };
 
 },{}],3:[function(require,module,exports){
-var Client = require("client-uniform/browser.js");
-// Asynchronous HTTP request to www.example.com:80
-Client("www.example.com", false).http("GET", "/foo", {}, null, function (error, response) {
+var Channel = require("channel-uniform/browser");
+// var Channel = require("channel-uniform/node");
+
+// request
+var channel1 = Channel("httpbin.org");
+// asynchronous request
+channel1.request("GET", "/ip", {}, "Hello!", function (error, response) {
   if (error)
     throw error;
-  console.log(response);
+  console.log("\nhttp-async\n", response);
 });
-// Synchronous HTTPS request to www.example.com:443
-console.log(Client("www.example.com", true).http("GET", "/foo", {}, null));
-},{"client-uniform/browser.js":1}]},{},[3]);
+// synchronous request (may throw)
+var response = channel1.request("GET", "/ip", {}, "");
+console.log("\nhttp-sync\n", response);
+
+// websocket
+var channel2 = Channel("echo.websocket.org")
+var ws = channel2.websocket("/");
+ws.onopen = function () {
+  ws.onmessage = function (event) {
+    console.log("\nws\n", event.data);
+  };
+  ws.send("Hello!");
+};
+},{"channel-uniform/browser":1}]},{},[3]);

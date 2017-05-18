@@ -1,46 +1,128 @@
-# request-uniform
-A uniform API for http[s] request.
+# Channel Uniform
 
-## Node
+API for performing http(s) request and creating websockets uniformely accross node.js and browsers.
+* Use `require("channel-uniform/node")` inside node applications.
+* Use `require("channel-uniform/browser")` inside modules to be [browserified](http://browserify.org). 
 
 ```js
-// Choose either host or unix (faster)
-var options = {
-  secure: false,
-  host: "localhost:8080",
-  unix: "/absolute/path/to/unix/domain/socket", 
-  method: "GET",
-  path: "/path?query#hash"
-  headers: {}, 
-  body: null
-};
-// Asynchronous http(s) request
-Protocols.http(options, function (error, response) {
-  ...
+// Uncomment one of the two lines below
+// var Channel = require("channel-uniform/node");
+// var Channel = require("channel-uniform/browser");
+
+// request
+var channel1 = Channel("httpbin.org");
+var response = channel1.request("GET", "/ip", {}, "");
+console.log("\nhttp-sync\n", response);
+channel1.request("GET", "/ip", {}, "", function (error, response) {
+  if (error)
+    throw error;
+  console.log("\nhttp-async\n", response);
 });
-// Asynchronous http(s) request without parsing the response
-Protocols.http(options, true);
-// Synchronous http(s) request
-try {
-  var response = Protocols.http(options);
-} catch (error) {
-  ...
-}
+
+// websocket
+var channel2 = Channel("echo.websocket.org")
+var ws = channel2.websocket("/");
+ws.onopen = function () {
+  ws.onmessage = function (event) {
+    console.log("\nws\n", event.data);
+  };
+  ws.send("Hello!");
+};
 ```
 
-Alternatively, the response can be manually entered by the user through a synchronous readline with `require("request-uniform/node-readline-sync")`.
-
-## Browser
-
-Through [browserify](http://browserify.org), this module provides the same interface for the browser:
-
-```js
-var RequestUniform = require("request-uniform/browser");
-var request = RequestUniform("http://www.example.com/foo");
-// Asynchronous http request with XMLHttpRequest's aync flag set to true
-request("GET", "/bar", {}, "", function (error, status, headers, body) { ... });
-// Synchronous http request with XMLHttpRequest's aync flag set to false
-var [error, status, headers, body] = request("GET", "/bar", {}, "");
 ```
 
-Alternatively, the response can be manually entered by the user through a synchronous prompt dialog with `require("browser/prompt")`.
+http-sync
+ { status: 200,
+  reason: 'OK',
+  headers: 
+   { server: 'meinheld/0.6.1',
+     date: 'Thu, 18 May 2017 13:30:07 GMT',
+     'content-type': 'application/json',
+     'access-control-allow-origin': '*',
+     'access-control-allow-credentials': 'true',
+     'x-powered-by': 'Flask',
+     'x-processed-time': '0.000710010528564',
+     'content-length': '32',
+     via: '1.1 vegur' },
+  body: '{\n  "origin": "81.164.22.111"\n}\n' }
+
+http-async
+ { status: 200,
+  reason: 'OK',
+  headers: 
+   { connection: 'close',
+     server: 'meinheld/0.6.1',
+     date: 'Thu, 18 May 2017 13:30:08 GMT',
+     'content-type': 'application/json',
+     'access-control-allow-origin': '*',
+     'access-control-allow-credentials': 'true',
+     'x-powered-by': 'Flask',
+     'x-processed-time': '0.000776052474976',
+     'content-length': '32',
+     via: '1.1 vegur' },
+  body: '{\n  "origin": "81.164.22.111"\n}\n' }
+
+ws
+ Hello!
+```
+
+## `channel = Channel(host, secure)`
+
+Instantiate a new channel.
+
+* `host(string)`: defines the other end point of the channel, understand the formats detailed below.
+   Format       | Example                | Remark
+  --------------|------------------------|------------------------------------------------------------------------------------
+  host and port | `"www.example.org:80"` | 
+  host only     | `"www.example.org"`    | The default port is used: 80 for plain connections and 443 for encrypted connection
+  port only     | `"8080"`               | Equivalent to `"localhost:8080"`
+  path          | "/path/to/unix-socket" | Absolute path to a unix-domain-socket, faster but works only on node
+* `secure(boolean)`: indicates whether the communication should be encrypted or not.
+* `channel(object)`: instance of this module.
+
+## `response = channel.request(method, path, headers, body)`
+
+Perform a synchronous http(s) request, may throw an error.
+
+* `channel(object)`: instance of this module.
+* `method(string)`: http method (eg: `"GET"` or `"POST"`).
+* `path(string)`: path of the http(s) request
+* `headers(object)`: mapping from header keys to header values
+* `body(string)`: body of the http(s) request.
+* `response(object)`: buffered response object
+  * `response.status(number)`: http status code (eg: `200` or `404`).
+  * `response.reason(string)`: reason stated in the status line
+  * `response.headers(object)`: mapping from header keys to header values
+  * `response.body(string)`: body of the response
+
+## `channel.request(method, path, headers, body, callback)`
+
+Perform an asynchronous http(s) request.
+
+* `callback(function|any)`:
+  * If callback is a function it will be called once the request is completed with two arguments:
+    1. an instance of `Error` if it failed and `null` if it succeed
+    2. an response object similar as with synchronous requests
+    *Attention*: on node, such request will only be fired after resuming to the event loop.
+    Every other communication in this module will be fired immediately regardeless resumption to the event looop.
+  * Else if callback is a truthy value, the response will not be parsed (faster).
+  * Else a synchronous request will actually be performed.
+
+## `websocket = channel.websocket(path)`
+
+* `path(string)`: path for the http(s) upgrade request.
+* `websocket(object)`: instance of window.WebSocket in browsers and an instance of [ws](https://www.npmjs.com/package/ws) in node, both provide the same basic API:
+  ```js
+  var websocket = channel.websocket(path);
+  websocket.onopen = function () { ... };
+  websocket.onclose = function (code, reason) { ... };
+  websocket.onerror = function (error) { ... };
+  websocket.onmessage = function (event) {
+    var message = event.data;
+    ...
+  };
+  // once open //
+  websocket.send(message);
+  websocket.close(code, reason);
+  ```
