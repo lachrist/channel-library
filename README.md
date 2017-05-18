@@ -75,8 +75,8 @@ Instantiate a new channel.
    Format       | Example                | Remark
   --------------|------------------------|------------------------------------------------------------------------------------
   host and port | `"www.example.org:80"` | 
-  host only     | `"www.example.org"`    | The default port is used: 80 for plain connections and 443 for encrypted connection
-  port only     | `"8080"`               | Equivalent to `"localhost:8080"`
+  host only     | `"www.example.org"`    | A default port is used: 80 for plain connections and 443 for encrypted connection
+  port only     | `"8080"`               | Local port, equivalent to `"localhost:8080"`
   path          | "/path/to/unix-socket" | Absolute path to a unix-domain-socket, faster but works only on node
 
 * `secure(boolean)`: indicates whether the communication should be encrypted or not.
@@ -104,16 +104,17 @@ Perform an asynchronous http(s) request.
 * `callback(function|any)`:
   * If callback is a function it will be called once the request is completed with two arguments:
     1. an instance of `Error` if it failed and `null` if it succeed
-    2. an response object similar as with synchronous requests
-    *Attention*: on node, such request will only be fired after resuming to the event loop.
-    Every other communication in this module will be fired immediately regardeless resumption to the event looop.
+    2. a response object similar as with synchronous requests
   * Else if callback is a truthy value, the response will not be parsed (faster).
   * Else a synchronous request will actually be performed.
+
+**Attention**: on node, when the callback parameter is a function, the request will only be fired after resuming to the event loop.
+Every other communication in this module will be fired immediately regardeless resumption to the event looop.
 
 ## `websocket = channel.websocket(path)`
 
 * `path(string)`: path for the http(s) upgrade request.
-* `websocket(object)`: instance of window.WebSocket in browsers and an instance of [ws](https://www.npmjs.com/package/ws) in node, both provide the same basic API:
+* `websocket(object)`: instance of `window.WebSocket` in browsers and an instance of [ws](https://www.npmjs.com/package/ws) in node, both provide the same basic API:
   ```js
   var websocket = channel.websocket(path);
   websocket.onopen = function () { ... };
