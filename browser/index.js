@@ -1,5 +1,5 @@
 
-var ParseHeaders = require("./parse-headers.js");
+var ParseHeaders = require("../common/parse-headers.js");
 
 // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/send
 
@@ -18,7 +18,7 @@ var ParseHeaders = require("./parse-headers.js");
 module.exports = function (host, secure) {
   secure = secure ? "s" : "";
   return {
-    websocket: function (path) { return new WebSocket("ws"+secure+"://"+host+path) },
+    connect: function (path) { return new WebSocket("ws"+secure+"://"+host+path) },
     request: function (method, path, headers, body, callback) {
       var req = new XMLHttpRequest();
       req.open(method, "http"+secure+"://"+host+path, Boolean(callback));

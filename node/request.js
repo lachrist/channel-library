@@ -1,7 +1,7 @@
 
 var Http = require("http");
 var Https = require("https");
-var ParseResponse = require("./parse-response.js");
+var ParseResponse = require("../common/parse-response.js");
 var ChildProcess = require("child_process");
 
 var emit = ChildProcess.fork(__dirname+"/emit.js", {stdio: ["ignore", "inherit", "inherit", "ipc"]});
@@ -54,9 +54,5 @@ module.exports = function (host, secure) {
     });
     req.on("error", callback);
     req.end(body, "utf8");
-    // if (body)
-    //   req.end(body, "utf8");
-    // else
-    //   req.end();
   };
 };

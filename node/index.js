@@ -13,7 +13,7 @@ module.exports = function (host, secure) {
   else
     var prefix = "ws"+secure+"://"+host.hostname;
   return {
-    websocket: function (path) { return new Ws(prefix+path) },
+    connect: function (path) { return new Ws(prefix+path) },
     request: Request(host, secure)
   };
 };
