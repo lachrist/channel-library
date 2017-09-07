@@ -1,5 +1,5 @@
 
-var Factory = require("./factory");
+var Prototype = require("../prototype");
 
 function onrequest (method, reason, headers, body, callback) {
   this.__output__.write(method+" "+reason+" "+JSON.stringify(headers)+" "+body+"\n");
@@ -14,9 +14,9 @@ function onconnect (path, con) {
 }
 
 module.exports = function (output) {
-  return Factory({
-    __output__: output,
-    __onrequest__: onrequest,
-    __onconnect__: onconnect
-  });
+  var self = Object.create(Prototype);
+  self.__output__ = output;
+  self.__onrequest__ = onrequest;
+  self.__onconnect__ = onconnect;
+  return self;
 };

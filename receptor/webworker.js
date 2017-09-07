@@ -1,11 +1,10 @@
 
-var Pool = require("../../common/pool.js");
-var Onrequest = require("../../common/onrequest.js");
-var Onconnect = require("../../common/onconnect.js");
+var Pool = require("../common/pool.js");
+var Onrequest = require("./private/onrequest.js");
+var Onconnect = require("./private/onconnect.js");
 
-module.exports = function (path) {
-  var self = this;
-  var worker = new global.Worker(path);
+module.exports = function (self, url) {
+  var worker = new Worker(url);
   var pool = Pool(worker.postMessage.bind(worker));
   worker.onmessage = function (message) {
     var views = {};

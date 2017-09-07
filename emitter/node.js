@@ -5,7 +5,7 @@ var ChildProcess = require("child_process");
 var Ws = require("ws");
 var ParseHost = require("../common/parse-host.js");
 var ParseResponse = require("../common/parse-response.js");
-var Factory = require("./factory");
+var Prototype = require("./prototype");
 
 function request (method, path, headers, body, callback) {
   if (!callback) {
@@ -57,13 +57,13 @@ module.exports = function (host, secure) {
     var rprefix = "http"+secure+"://"+host.hostname+(host.port?":"+host.port:"");
     var cprefix = "ws"+secure+"://"+host.hostname+(host.port?":"+host.port:"");
   }
-  return Factory({
-    request: request,
-    connect: connect,
-    __host__: host,
-    __prefix__:  "",
-    __rprefix__: rprefix,
-    __cprefix__: cprefix,
-    __protocol__: secure ? Https : Http
-  });
+  var self = Object.create(Prototype);
+  self.request = request;
+  self.connect = connect;
+  self.__prefix__ = "";
+  self.__host__ = host;
+  self.__rprefix__ = rprefix;
+  self.__cprefix__ = cprefix;
+  self.__protocol__ = secure ? Https : Http;
+  return self;
 };

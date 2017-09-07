@@ -1,11 +1,10 @@
-
+0
 var Ws = require("ws");
 var Url = require("url");
-var Onrequest = require("../../common/onrequest.js");
-var Onconnect = require("../../common/onconnect.js");
+var Onrequest = require("./private/onrequest.js");
+var Onconnect = require("./private/onconnect.js");
 
-module.exports = function (server) {
-  var self = this;
+module.exports = function (self, server) {
   var ws = new Ws.Server({noServer:true});
   server.on("request", function (req, res) {
     var body = "";

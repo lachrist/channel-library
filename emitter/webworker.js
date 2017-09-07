@@ -1,6 +1,6 @@
 
 var Pool = require("../common/pool.js");
-var Factory = require("./factory");
+var Prototype = require("./prototype");
 
 function request (method, path, headers, body, callback) {
   if (!callback) {
@@ -69,14 +69,14 @@ module.exports = function (size) {
   views.lock = new Uint8Array(shared, 0, 1);
   views.length = new Uint32Array(shared, 4, 1);
   views.data = new Uint16Array(shared, 8);
-  return Factory({
-    request: request,
-    connect: connect,
-    __post__: global.postMessage,
-    __callbacks__: callbacks,
-    __prefix__:  "",
-    __views__: views,
-    __pool__add__: pool.add,
-    __pool__free__: pool.free
-  });
+  var self = Object.create(Prototype);
+  self.request = request;
+  self.connect = connect;
+  self.__prefix__ = "";
+  self.__post__ = global.postMessage;
+  self.__callbacks__ = callbacks;
+  self.__views__ = views;
+  self.__pool__add__ = pool.add;
+  self.__pool__free__ = pool.free;
+  return self;
 };
