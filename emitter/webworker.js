@@ -1,32 +1,35 @@
 
-var Pool = require("../common/pool.js");
+var WebworkerSocketPool = require("../util/webworker-socket-pool.js");
 var Prototype = require("./prototype");
 
 function request (method, path, headers, body, callback) {
+  var copy = {};
+  for (var key in headers)
+    copy[key] = ""+headers[key];
   if (!callback) {
-    this.__views__.lock[0] = 1;
-    this.__post__({
+    this._views.lock[0] = 1;
+    postMessage({
       name: "sync",
-      method: method,
-      path: path,
-      headers: headers,
-      body: body
+      method: ""+method,
+      path: this._prefix+path,
+      headers: copy,
+      body: ""+body
     });
-    while (this.__views__.lock[0]);
-    if (this.__views__.length[0] > this.__views__.data.length)
+    while (this._views.lock[0]);
+    if (this._views.length[0] > this._views.data.length)
       throw new Error("Response too long for "+method+" "+path);
-    var data = JSON.parse(String.fromCharCode.apply(null, this.__views__.data.slice(0, this.__views__.length[0])));;
+    var data = JSON.parse(String.fromCharCode.apply(null, this._views.data.slice(0, this._views.length[0])));;
     return [data.status, data.reason, data.headers, data.body];
   }
-  for (var i=0; i<=this.__callbacks__.length; i++) {
-    if (!this.__callbacks__[i]) {
-      this.__callbacks__[i] = callback;
-      return this.__post__({
+  for (var i=0; i<=this._callbacks.length; i++) {
+    if (!this._callbacks[i]) {
+      this._callbacks[i] = callback;
+      return postMessage({
         name: "async",
         index: i,
-        method: method,
-        path: path,
-        headers: headers,
+        method: ""+method,
+        path: this._prefix+path,
+        headers: copy,
         body: body
       });
     }
@@ -34,37 +37,37 @@ function request (method, path, headers, body, callback) {
 }
 
 function connect (path) {
-  var index = this.__pool__free__();
-  this.__post__({
+  var index = this._poolfree();
+  postMessage({
     name: "open",
-    path: path,
+    path: this._prefix+path,
     index: index
   });
-  return this.__pool__add__(index);
+  return this._pooladd(index);
 }
 
-var created = false;
+var singleton = false;
 
 module.exports = function (size) {
-  if (created)
+  if (singleton)
     throw new Error("Only one webworker emitter can be created...");
-  created = true;
+  singleton = true;
   var callbacks = [];
-  var pool = Pool(global.postMessage);
+  var pool = WebworkerSocketPool(postMessage);
   var handlers = {
     close: pool.onclose,
     message: pool.onmessage,
     open: pool.onopen,
     async: function (data) {
-      callbacks[index](null, data);
-      delete callbacks[index];
+      callbacks[data.index](null, data.status, data.reason, data.headers, data.body);
+      delete callbacks[data.index];
     }
   };
-  global.onmessage = function (message) {
+  onmessage = function (message) {
     handlers[message.data.name](message.data)
   };
   var shared = new SharedArrayBuffer(2*(size||1024)+8);
-  global.postMessage(shared);
+  postMessage(shared);
   var views = {};
   views.lock = new Uint8Array(shared, 0, 1);
   views.length = new Uint32Array(shared, 4, 1);
@@ -72,11 +75,10 @@ module.exports = function (size) {
   var self = Object.create(Prototype);
   self.request = request;
   self.connect = connect;
-  self.__prefix__ = "";
-  self.__post__ = global.postMessage;
-  self.__callbacks__ = callbacks;
-  self.__views__ = views;
-  self.__pool__add__ = pool.add;
-  self.__pool__free__ = pool.free;
+  self._prefix = "";
+  self._callbacks = callbacks;
+  self._views = views;
+  self._pooladd = pool.add;
+  self._poolfree = pool.free;
   return self;
 };

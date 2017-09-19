@@ -1,8 +1,157 @@
-# Channel Uniform
+# Antena
+
+## Receptor
+
+### `receptor = require("antena/receptor")(options)`
+
+* `options :: object`
+  * `onrequest(method, path, headers, body, callback)`
+    * `method :: string`
+    * `path :: string`
+    * `headers :: {string}`
+    * `body :: string`
+    * `callback(status, reason, headers, body)`
+      * `status :: number`
+      * `reason :: string`
+      * `headers :: {string}`
+      * `body :: string`
+  * `onconnect(path, websocket)`
+    * `path :: string`
+    * `websocket :: antena.Websocket`
+* `receptor :: antena.Receptor`
+
+### `receptor2 = receptor1.merge(receptors)`
+
+* `receptor1 :: antena.Receptor`
+* `receptors :: {antena.Receptor}`
+* `receptor2 :: antena.Receptor`
+
+### `receptor2 = receptor1.trace(name)`
+
+* `receptor1 :: antena.Receptor`
+* `name :: string`
+* `receptor2 :: antena.Receptor`
+
+### `handlers = require("antena/receptor/handlers-server")(receptor)`
+
+* `receptor :: antena.Receptor`
+* `handlers :: object`
+  * `request(request, response)`
+    * `request :: http.IncomingMessage`
+    * `response :: http.ServerResponse`
+  * `upgrade(request, socket, head)`
+    * `request :: http.IncomingMessage`
+    * `socket :: net.Socket`
+    * `head :: Buffer`
+
+### `handlers = require("antena/receptor/handlers-webworker")(receptor)`
+
+* `handlers(object)`
+  * `message(message)`
+    * `message :: *`
+  * `terminate()`
+
+## Emitter
+
+### `emitter = require("antena/emitter/node")(host)`
+
+* `host :: string`
+* `emitter :: antena.Emitter`
+
+### `emitter = require("antena/emitter/browser")(host)`
+
+* `host :: string`
+* `emitter :: antena.Emitter`
+
+### `emitter = require("antena/emitter/webworker")(size)`
+
+* `size :: number`
+* `emitter :: antena.Emitter`
+
+### `emitter = require("antena/emitter/mock")(receptor)`
+
+* `receptor :: antena.Receptor`
+* `emitter :: antena.Emitter`
+
+### `emitter.request(method, path, headers, body, callback)`
+
+* `emitter :: antena.Emitter`
+* `method :: string`
+* `path :: string`
+* `headers :: {string}`
+* `body :: string`
+* `callback(error, status, reason, headers, body)`
+  * `error :: Error`
+  * `status :: number`
+  * `reason :: string`
+  * `headers :: {string}`
+  * `body :: string`
+
+### `[error2, status2, reason2, headers2, body2] = emitter.request(method1, path1, headers1, body1)`
+
+* `emitter :: antena.Emitter`
+* `method1 :: string`
+* `path1 :: string`
+* `headers1 :: {string}`
+* `body1 :: string`
+* `error2 :: Error`
+* `status2 :: number`
+* `reason2 :: string`
+* `headers2 :: {string}`
+* `body2 :: string`
+
+### `websocket = emitter.connect(path)`
+
+* `emitter :: antena.Emitter`
+* `path(string)`
+* `websocket :: antena.Websocket`
+
+### `emitters = emitter.split(splitters)`
+
+* `emitter :: antena.Emitter`
+* `splitter :: [string]`
+* `emitters :: {antena.Emitter}`
+
+### `emitter2 = emitter1.trace(name)`
+
+* `emitter1 :: antena.Emitter`
+* `name(string)`
+* `emitter2 :: antena.Emitter`
+
+## Websocket
+
+### `websocket.send(message)`
+
+* `websocket :: antena.Websocket`
+* `message :: string | ArrayBuffer | Blob | Buffer`
+
+### `websocket.close(code, reason)`
+
+* `websocket :: antena.Websocket`
+* `code(number)`
+* `reason(string)`
+
+### Event: "open"
+
+### Event: "message"
+
+* `message :: string | ArrayBuffer`
+
+### Event: close
+
+* `code :: number`
+* `reason :: string`
+
+
+<!-- 
+
 
 API for performing http(s) request and opening websockets uniformly across [node.js](http://nodejs.org) and browsers.
 * Use `require("channel-uniform/node")` inside node applications.
 * Use `require("channel-uniform/browser")` inside modules to be [browserified](http://browserify.org). 
+
+
+
 
 ```js
 // Uncomment one of the two lines below:
@@ -70,7 +219,7 @@ ws
 
 Instantiate a new channel.
 
-* `host(string)`: defines the other end point of the channel, understand the formats detailed below.
+* `host(string|number)`: defines the other end point of the channel, understand the formats detailed below.
 
    Format       | Example                | Remark
   --------------|------------------------|------------------------------------------------------------------------------------
@@ -128,3 +277,4 @@ Every other communication in this module are fired immediately.
   websocket.send(message);
   websocket.close(code, reason);
   ```
+ -->

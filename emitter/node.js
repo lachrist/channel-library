@@ -3,8 +3,8 @@ var Http = require("http");
 var Https = require("https");
 var ChildProcess = require("child_process");
 var Ws = require("ws");
-var ParseHost = require("../common/parse-host.js");
-var ParseResponse = require("../common/parse-response.js");
+var ParseHost = require("../util/parse-host.js");
+var ParseResponse = require("../util/parse-response.js");
 var Prototype = require("./prototype");
 
 function request (method, path, headers, body, callback) {
@@ -14,10 +14,10 @@ function request (method, path, headers, body, callback) {
       args.push("--data-binary", "@-");
     for (var h in headers)
       args.push("--header", h+": "+headers[h]);
-    if (this.__host__.unix)
-      args.push("--unix-socket", this.__host__.unix, this.__rprefix__+this.__prefix__+path);
+    if (this._host.unix)
+      args.push("--unix-socket", this._host.unix, this._rprefix+this._prefix+path);
     else
-      args.push(this.__rprefix__+this.__prefix__+path);
+      args.push(this._rprefix+this._prefix+path);
     var result = ChildProcess.spawnSync("curl", args, {input:body||"", encoding:"utf8"});
     if (result.error)
       throw result.error;
@@ -25,11 +25,11 @@ function request (method, path, headers, body, callback) {
       throw new Error("curl "+args.join(" ")+" failed with: "+result.status+" "+result.stderr);
     return ParseResponse(result.stdout);
   }
-  this.__protocol__.request({
+  this._protocol.request({
     method: method,
-    hostname: this.__host__.hostname,
-    port: this.__host__.port,
-    socketPath: this.__host__.unix,
+    hostname: this._host.hostname,
+    port: this._host.port,
+    socketPath: this._host.unix,
     headers: headers,
     path: path,
     body: body
@@ -44,7 +44,7 @@ function request (method, path, headers, body, callback) {
 }
 
 function connect (path) {
-  return new Ws(this.__cprefix__+this.__prefix__+path);
+  return new Ws(this._cprefix+this._prefix+path);
 }
 
 module.exports = function (host, secure) {
@@ -60,10 +60,10 @@ module.exports = function (host, secure) {
   var self = Object.create(Prototype);
   self.request = request;
   self.connect = connect;
-  self.__prefix__ = "";
-  self.__host__ = host;
-  self.__rprefix__ = rprefix;
-  self.__cprefix__ = cprefix;
-  self.__protocol__ = secure ? Https : Http;
+  self._prefix = "";
+  self._host = host;
+  self._rprefix = rprefix;
+  self._cprefix = cprefix;
+  self._protocol = secure ? Https : Http;
   return self;
 };

@@ -2,10 +2,9 @@
 module.exports = function (receptor, path, con) {
   var segments = path.split("/");
   segments.shift();
-  while (receptor) {
+  while (true) {
     if (receptor.__onconnect__)
       return receptor.__onconnect__("/"+segments.join("/"), con);
-    receptor = receptor.__childs__[segments.shift()];
+    receptor = (segments[0] in receptor.__childs__) ? receptor.__childs__[segments.shift()] : receptor.__default__;
   }
-  con.close(4000, "invalid-path");
 };

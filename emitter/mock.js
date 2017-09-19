@@ -1,8 +1,9 @@
 
 var Events = require("events");
 var Prototype = require("./prototype");
-var Onrequest = require("../receptor/private/onrequest.js");
-var Onconnect = require("../receptor/private/onconnect.js");
+var Onrequest = require("../receptor/dispatch/onrequest.js");
+var Onconnect = require("../receptor/dispatch/onconnect.js");
+var BlobToArrayBuffer = require("../util/blob-to-array-buffer.js");
 
 function request (method, path, headers, body, callback) {
   /* https://github.com/abbr/deasync/issues/83 */
@@ -17,7 +18,7 @@ function request (method, path, headers, body, callback) {
       "cf: https://github.com/abbr/deasync/issues/83."
     ].join(""));
   }
-  setTimeout(Onrequest, 0, this.__receptor__, method, this.__prefix__+path, headers, body, function (status, reason, headers, body) {
+  setTimeout(Onrequest, 0, this._receptor, method, this._prefix+path, headers, body, function (status, reason, headers, body) {
     setTimeout(callback, 0, null, status, reason, headers, body);
   });
 };
@@ -31,7 +32,7 @@ function connect (path) {
   con2.send = send;
   con1.pair = con2;
   con2.pair = con1;
-  setTimeout(Onconnect, 0, this.__receptor__, this.__prefix__+path, con2);
+  setTimeout(Onconnect, 0, this._receptor, this._prefix+path, con2);
   setTimeout(con1.emit.bind(con1), 0, "open");
   return con1;
 }
@@ -45,17 +46,21 @@ function close (code, reason) {
 }
 
 function send (message) {
-  var pair = this.pair
-  setTimeout(function () {
-    pair.emit("message", message);
-  }, 0);
+  message = (message instanceof ArrayBuffer
+    ? message.slice();
+    : (typeof Buffer !== "undefined" && message instanceof Buffer
+      ? message.buffer.slice()
+      : (typeof Blob !== "undefined" && message instanceof Blob
+        ? BlobToArrayBuffer(message)
+        : ""+message)));
+  setTimeout(function (pair) { pair.emit("message", data) }, 0, this.pair);
 }
 
 module.exports = function (receptor) {
   var self = Object.create(Prototype);
   self.request = request;
   self.connect = connect;
-  self.__prefix__ = "";
-  self.__receptor__ = receptor;
+  self._prefix = "";
+  self._receptor = receptor;
   return self;
 };
